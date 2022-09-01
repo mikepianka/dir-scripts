@@ -14,9 +14,9 @@ def human_bytes(B: Union[int, float]) -> str:
 
     B = float(B)
     KB = float(1024)
-    MB = float(KB ** 2)  # 1,048,576
-    GB = float(KB ** 3)  # 1,073,741,824
-    TB = float(KB ** 4)  # 1,099,511,627,776
+    MB = float(KB**2)  # 1,048,576
+    GB = float(KB**3)  # 1,073,741,824
+    TB = float(KB**4)  # 1,099,511,627,776
 
     if B < KB:
         return "{0} {1}".format(B, "Bytes" if 0 == B > 1 else "Byte")
@@ -46,7 +46,12 @@ def total_tree_size(top_dir: str) -> str:
             filepath = os.path.join(dirpath, f)
             # skip if it is symbolic link
             if not os.path.islink(filepath):
-                total_size += os.path.getsize(filepath)
+                try:
+                    total_size += os.path.getsize(filepath)
+                except FileNotFoundError:
+                    # likely a Windows path that is too long, add extended-length path prefix
+                    filepath_extended = "\\\\?\\" + filepath
+                    total_size += os.path.getsize(filepath_extended)
 
     print(top_dir + " total size is " + human_bytes(total_size))
 
